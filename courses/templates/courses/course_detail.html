@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="card-title">{{ course.title }}</h2>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">By {{ course.creator.get_full_name }}</span>
+                        <span class="badge bg-{{ course.is_free|yesno:'success,primary' }}">
+                            {{ course.is_free|yesno:"Free,Paid" }}
+                        </span>
+                    </div>
+                    <p class="card-text">{{ course.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if course.level == 'beginner' %}
+                                <span class="badge bg-success me-2">{{ course.get_level_display }}</span>
+                            {% elif course.level == 'intermediate' %}
+                                <span class="badge bg-info me-2">{{ course.get_level_display }}</span>
+                            {% elif course.level == 'advanced' %}
+                                <span class="badge bg-warning me-2">{{ course.get_level_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">{{ course.get_level_display }}</span>
+                            {% endif %}
+                            <span class="text-muted">{{ course.skill.name }}</span>
+                        </div>
+                        <div>
+                            <span class="text-muted">{{ course.courseenrollment_set.count }} students</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if is_enrolled %}
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Course Content</h4>
+                </div>
+                <div class="card-body">
+                    {% for module in modules %}
+                    <div class="mb-4">
+                        <h5>{{ module.title }}</h5>
+                        {% if module.description %}<p class="text-muted">{{ module.description }}</p>{% endif %}
+                        
+                        <div class="list-group">
+                            {% for content in module.contents.all %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ content.title }}</h6>
+                                        <small class="text-muted">{{ content.get_content_type_display }}</small>
+                                    </div>
+                                    {% if content.is_free_preview %}
+                                    <span class="badge bg-success">Free Preview</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info">No content available yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% if is_enrolled %}
+                    <div class="alert alert-success">You're enrolled in this course!</div>
+                    <a href="#" class="btn btn-primary w-100 mb-2">Continue Learning</a>
+                    {% else %}
+                    <h5 class="card-title">Enroll in this course</h5>
+                    {% if course.is_free %}
+                    <p class="card-text">This course is free to enroll.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" name="enroll" class="btn btn-primary w-100">Enroll Now</button>
+                    </form>
+                    {% else %}
+                    <p class="card-text">Price: {{ course.price }} SwapCoins</p>
+                    <p class="card-text text-muted small">Your balance: {{ request.user.swap_coins }} SwapCoins</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" name="enroll" class="btn btn-primary w-100">Enroll Now</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">About the Instructor</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if course.creator.profile_picture %}
+                        <img src="{{ course.creator.profile_picture.url }}" alt="{{ course.creator.username }}" 
+                             class="rounded-circle me-3" width="50" height="50">
+                        {% else %}
+                        <div class="rounded-circle bg-light me-3 d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px;">
+                            <span class="text-muted">{{ course.creator.username|first|upper }}</span>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ course.creator.get_full_name }}</h6>
+                            <small class="text-muted">@{{ course.creator.username }}</small>
+                        </div>
+                    </div>
+                    {% if course.creator.bio %}
+                    <p>{{ course.creator.bio }}</p>
+                    {% else %}
+                    <p class="text-muted">No bio available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

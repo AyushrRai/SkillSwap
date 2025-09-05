@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - {{ event.circle.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'community:circle_list' %}">Circles</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'community:circle_detail' event.circle.id %}">{{ event.circle.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="#">Events</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ event.title }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>{{ event.title }}</h2>
+                <span class="badge bg-primary">
+                    {{ event.get_event_type_display }}
+                </span>
+            </div>
+            
+            <!-- Event Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-calendar-alt me-2"></i> Date & Time</h5>
+                            <p class="ms-4">
+                                {{ event.start_time|date:"l, F j, Y" }}<br>
+                                {{ event.start_time|time:"g:i A" }} - {{ event.end_time|time:"g:i A" }}
+                                {% if event.is_recurring %}
+                                    <br><small class="text-muted">(Recurring: {{ event.recurrence_pattern }})</small>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-users me-2"></i> Participants</h5>
+                            <p class="ms-4">
+                                {{ event.participant_count }} registered
+                                {% if event.max_participants > 0 %}
+                                    (max {{ event.max_participants }})
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if event.meeting_link %}
+                    <div class="mb-4">
+                        <h5><i class="fas fa-video me-2"></i> Meeting Link</h5>
+                        <div class="ms-4">
+                            <a href="{{ event.meeting_link }}" target="_blank" class="btn btn-outline-primary">
+                                Join Meeting
+                            </a>
+                            <button class="btn btn-outline-secondary ms-2" onclick="copyToClipboard('{{ event.meeting_link }}')">
+                                <i class="fas fa-copy me-1"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h5><i class="fas fa-info-circle me-2"></i> Description</h5>
+                        <div class="ms-4">
+                            {{ event.description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registration Button -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    {% if is_registered %}
+                        <p class="lead">You're registered for this event!</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="unregister" class="btn btn-outline-danger">
+                                <i class="fas fa-user-minus me-1"></i> Unregister
+                            </button>
+                        </form>
+                    {% elif can_register %}
+                        {% if event.max_participants > 0 and event.participant_count >= event.max_participants %}
+                            <p class="text-danger">This event has reached its maximum capacity.</p>
+                        {% else %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" name="register" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-user-plus me-1"></i> Register for Event
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% elif not is_member %}
+                        <p class="text-muted">You need to be a member of {{ event.circle.name }} to register for this event.</p>
+                        <a href="{% url 'community:circle_detail' event.circle.id %}" class="btn btn-primary">
+                            Join Circle
+                        </a>
+                    {% else %}
+                        <p class="text-muted">Registration is closed for this event.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Event Organizer -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-user-tie me-2"></i> Event Organizer</h5>
+                    <div class="d-flex align-items-center">
+                        <img src="{{ event.created_by.profile_picture.url }}" 
+                             alt="{{ event.created_by.username }}" 
+                             class="rounded-circle me-3" width="60" height="60">
+                        <div>
+                            <h6 class="mb-1">
+                                <a href="{% url 'public_profile' event.created_by.username %}" class="text-decoration-none">
+                                    {{ event.created_by.get_full_name }}
+                                </a>
+                            </h6>
+                            <p class="text-muted small mb-0">
+                                {{ event.created_by.userprofile.headline|default:"Circle Member" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Circle Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i> {{ event.circle.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">{{ event.circle.description|truncatechars:120 }}</p>
+                    <a href="{% url 'community:circle_detail' event.circle.id %}" 
+                       class="btn btn-outline-primary btn-sm w-100">
+                        View Circle
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Registered Participants -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-friends me-2"></i> Participants
+                    </h5>
+                    <span class="badge bg-primary rounded-pill">{{ registrations.count }}</span>
+                </div>
+                <div class="card-body">
+                    {% if registrations %}
+                        <div class="avatar-group mb-3">
+                            {% for registration in registrations|slice:":12" %}
+                                <a href="{% url 'public_profile' registration.user.username %}" 
+                                   class="avatar avatar-sm" 
+                                   data-bs-toggle="tooltip" 
+                                   title="{{ registration.user.get_full_name }}">
+                                    <img src="{{ registration.user.profile_picture.url }}" 
+                                         class="rounded-circle" 
+                                         width="40" height="40" 
+                                         alt="{{ registration.user.username }}">
+                                </a>
+                            {% endfor %}
+                        </div>
+                        {% if registrations.count > 12 %}
+                            <p class="small text-muted text-center">
+                                +{{ registrations.count|add:"-12" }} more participants
+                            </p>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No participants yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Other Events -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i> Upcoming Events
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="list-group list-group-flush">
+                            {% for evt in upcoming_events %}
+                                <a href="{% url 'community:event_detail' evt.id %}" 
+                                   class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ evt.title }}</span>
+                                        <small class="text-muted">{{ evt.start_time|date:"M j" }}</small>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No upcoming events</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Meeting link copied to clipboard!');
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+// Initialize tooltips
+$(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}
+{% endblock %}

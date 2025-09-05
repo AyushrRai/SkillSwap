@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} Courses - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ category.name }} Courses</h2>
+        <a href="{% url 'courses:course_list' %}" class="btn btn-outline-secondary">
+            Back to All Courses
+        </a>
+    </div>
+
+    {% if courses %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for course in courses %}
+        {% include 'courses/course_card.html' with course=course %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No courses available in this category.</div>
+    {% endif %}
+</div>
+{% endblock %}

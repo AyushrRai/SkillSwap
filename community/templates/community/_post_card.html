@@ -1,0 +1,46 @@
+<div class="list-group-item border-0 px-0 py-3">
+    <div class="d-flex mb-3">
+        <img src="{{ post.author.profile_picture.url }}" 
+             alt="{{ post.author.username }}" 
+             class="rounded-circle me-3" width="50" height="50">
+        <div>
+            <h6 class="mb-1">
+                <a href="{% url 'public_profile' post.author.username %}" class="text-decoration-none">
+                    {{ post.author.get_full_name }}
+                </a>
+                {% if post.post_type != 'discussion' %}
+                    <span class="badge bg-light text-dark ms-2">
+                        {{ post.get_post_type_display }}
+                    </span>
+                {% endif %}
+            </h6>
+            <small class="text-muted">
+                {{ post.created_at|timesince }} ago
+                {% if post.updated_at != post.created_at %}
+                    • edited
+                {% endif %}
+                {% if post.is_pinned %}
+                    • <i class="fas fa-thumbtack text-warning"></i> Pinned
+                {% endif %}
+            </small>
+        </div>
+    </div>
+    
+    <p class="mb-3">{{ post.content }}</p>
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <button class="btn btn-sm btn-outline-secondary like-btn" data-post-id="{{ post.id }}">
+                <i class="far fa-heart me-1"></i>
+                <span class="like-count">{{ post.like_count }}</span>
+            </button>
+            <a href="{% url 'community:post_detail' post.id %}" class="btn btn-sm btn-outline-secondary ms-2">
+                <i class="far fa-comment me-1"></i>
+                <span class="comment-count">{{ post.comment_count }}</span>
+            </a>
+        </div>
+        <a href="{% url 'community:post_detail' post.id %}" class="btn btn-sm btn-outline-primary">
+            View Post
+        </a>
+    </div>
+</div>

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Request Skill Exchange with {{ partner.get_full_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Skill</label>
+                            <input type="text" class="form-control" value="{{ skill.name }}" readonly>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Exchange Date</label>
+                                {{ form.exchange_date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Time</label>
+                                {{ form.exchange_time }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Duration (minutes)</label>
+                            {{ form.duration }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Meeting Type</label>
+                            {{ form.meeting_type }}
+                        </div>
+                        
+                        <div class="mb-3" id="location-field">
+                            <label class="form-label">Location</label>
+                            {{ form.location }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Send Request</button>
+                            <a href="{% url 'skills:find_mentors' skill.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if suggested_times %}
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Suggested Meeting Times</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for time in suggested_times %}
+                        <button type="button" class="list-group-item list-group-item-action suggest-time-btn" 
+                                data-date="{{ time|date:'Y-m-d' }}" 
+                                data-time="{{ time|time:'H:i' }}">
+                            {{ time|date:"D, M j" }} at {{ time|time:"g:i A" }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide location field based on meeting type
+    const meetingTypeRadios = document.querySelectorAll('input[name="meeting_type"]');
+    const locationField = document.getElementById('location-field');
+    
+    meetingTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            locationField.style.display = this.value === 'in_person' ? 'block' : 'none';
+        });
+    });
+    
+    // Set suggested time when clicked
+    document.querySelectorAll('.suggest-time-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('id_exchange_date').value = this.dataset.date;
+            document.getElementById('id_exchange_time').value = this.dataset.time;
+        });
+    });
+});
+</script>
+{% endblock %}

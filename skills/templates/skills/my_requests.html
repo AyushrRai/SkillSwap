@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Received Requests</h4>
+                </div>
+                <div class="card-body">
+                    {% if received_requests %}
+                        {% for req in received_requests %}
+                        <div class="mb-3 p-3 border rounded">
+                            <h5>{{ req.requester.get_full_name }}</h5>
+                            <p>Skill: {{ req.skill.name }}</p>
+                            <p>{{ req.message }}</p>
+                            <div class="d-flex">
+                                {% if req.status == 'pending' %}
+                                    <a href="{% url 'manage_request' req.id 'accept' %}" class="btn btn-sm btn-success me-2">Accept</a>
+                                    <a href="{% url 'manage_request' req.id 'reject' %}" class="btn btn-sm btn-danger">Reject</a>
+                                {% elif req.status == 'accepted' %}
+                                    <a href="{% url 'communication_room' req.communicationsession.room_id %}" class="btn btn-sm btn-primary">Join Session</a>
+                                {% else %}
+                                    <span class="badge bg-secondary">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No requests received yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Sent Requests</h4>
+                </div>
+                <div class="card-body">
+                    {% if sent_requests %}
+                        {% for req in sent_requests %}
+                        <div class="mb-3 p-3 border rounded">
+                            <h5>{{ req.receiver.get_full_name }}</h5>
+                            <p>Skill: {{ req.skill.name }}</p>
+                            <p>{{ req.message }}</p>
+                            <div class="d-flex">
+                                {% if req.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif req.status == 'accepted' %}
+                                    <a href="{% url 'communication_room' req.communicationsession.room_id %}" class="btn btn-sm btn-primary">Join Session</a>
+                                {% else %}
+                                    <span class="badge bg-secondary">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No requests sent yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

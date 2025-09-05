@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Courses - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Mini Courses</h2>
+            <p class="text-muted">Learn new skills through bite-sized courses</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="{% url 'courses:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Create Course
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#recommended" data-bs-toggle="tab">Recommended</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#popular" data-bs-toggle="tab">Popular</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#new" data-bs-toggle="tab">New</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#free" data-bs-toggle="tab">Free</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="recommended">
+                    {% if recommended_courses %}
+                        <div class="row g-4">
+                            {% for course in recommended_courses %}
+                                <div class="col-md-4">
+                                    <div class="card h-100">
+                                        {% if course.thumbnail %}
+                                            <img src="{{ course.thumbnail.url }}" class="card-img-top course-thumbnail" alt="{{ course.title }}">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ course.title }}</h5>
+                                            <p class="card-text text-muted small">{{ course.description|truncatechars:100 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-{{ course.get_level_color }}">
+                                                    {{ course.get_level_display }}
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="fas fa-users me-1"></i> {{ course.enrollment_count }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-white border-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                {% if course.is_free %}
+                                                    <span class="text-success fw-bold">Free</span>
+                                                {% else %}
+                                                    <span class="text-dark fw-bold">{{ course.price }} SwapCoins</span>
+                                                {% endif %}
+                                                <a href="{% url 'courses:detail' course.id %}" class="btn btn-sm btn-primary">
+                                                    View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-lightbulb fa-3x text-muted mb-3"></i>
+                            <h5>No Recommended Courses</h5>
+                            <p class="text-muted">Add skills to your profile to get course recommendations</p>
+                            <a href="{% url 'skills:add' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Add Skills
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="tab-pane fade" id="popular">
+                    {% if popular_courses %}
+                        <div class="row g-4">
+                            {% for course in popular_courses %}
+                                <div class="col-md-4">
+                                    <div class="card h-100">
+                                        {% if course.thumbnail %}
+                                            <img src="{{ course.thumbnail.url }}" class="card-img-top course-thumbnail" alt="{{ course.title }}">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ course.title }}</h5>
+                                            <p class="card-text text-muted small">{{ course.description|truncatechars:100 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-{{ course.get_level_color }}">
+                                                    {{ course.get_level_display }}
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="fas fa-users me-1"></i> {{ course.enrollment_count }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-white border-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                {% if course.is_free %}
+                                                    <span class="text-success fw-bold">Free</span>
+                                                {% else %}
+                                                    <span class="text-dark fw-bold">{{ course.price }} SwapCoins</span>
+                                                {% endif %}
+                                                <a href="{% url 'courses:detail' course.id %}" class="btn btn-sm btn-primary">
+                                                    View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <h5>No Popular Courses</h5>
+                            <p class="text-muted">Check back later for popular courses</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="tab-pane fade" id="new">
+                    {% if new_courses %}
+                        <div class="row g-4">
+                            {% for course in new_courses %}
+                                <div class="col-md-4">
+                                    <div class="card h-100">
+                                        {% if course.thumbnail %}
+                                            <img src="{{ course.thumbnail.url }}" class="card-img-top course-thumbnail" alt="{{ course.title }}">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ course.title }}</h5>
+                                            <p class="card-text text-muted small">{{ course.description|truncatechars:100 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-{{ course.get_level_color }}">
+                                                    {{ course.get_level_display }}
+                                                </span>
+                                                <span class="text-muted small">
+                                                    New
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-white border-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                {% if course.is_free %}
+                                                    <span class="text-success fw-bold">Free</span>
+                                                {% else %}
+                                                    <span class="text-dark fw-bold">{{ course.price }} SwapCoins</span>
+                                                {% endif %}
+                                                <a href="{% url 'courses:detail' course.id %}" class="btn btn-sm btn-primary">
+                                                    View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                            <h5>No New Courses</h5>
+                            <p class="text-muted">Check back later for new courses</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="tab-pane fade" id="free">
+                    {% if free_courses %}
+                        <div class="row g-4">
+                            {% for course in free_courses %}
+                                <div class="col-md-4">
+                                    <div class="card h-100">
+                                        {% if course.thumbnail %}
+                                            <img src="{{ course.thumbnail.url }}" class="card-img-top course-thumbnail" alt="{{ course.title }}">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ course.title }}</h5>
+                                            <p class="card-text text-muted small">{{ course.description|truncatechars:100 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-{{ course.get_level_color }}">
+                                                    {{ course.get_level_display }}
+                                                </span>
+                                                <span class="text-success fw-bold">Free</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-white border-0">
+                                            <a href="{% url 'courses:detail' course.id %}" class="btn btn-sm btn-primary w-100">
+                                                View
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                            <h5>No Free Courses</h5>
+                            <p class="text-muted">Check back later for free courses</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-white">
+            <h6 class="mb-0">Browse by Skill</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for category in categories %}
+                    <div class="col-md-2 col-4">
+                        <a href="{% url 'courses:by_category' category.id %}" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="icon-circle bg-primary text-white mb-2 mx-auto">
+                                        <i class="{{ category.icon }}"></i>
+                                    </div>
+                                    <h6 class="card-title mb-0">{{ category.name }}</h6>
+                                    <small class="text-muted">{{ category.course_count }} courses</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

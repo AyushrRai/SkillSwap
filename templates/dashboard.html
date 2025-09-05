@@ -1,0 +1,648 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <!-- Profile Card -->
+            <div class="card shadow-sm border-0 rounded-lg overflow-hidden">
+                <div class="card-body text-center p-4">
+                    <div class="avatar-container mb-3">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="avatar-img rounded-circle shadow">
+                        {% else %}
+                            <div class="avatar-default rounded-circle bg-gradient-primary text-white shadow">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h4 class="mb-1 fw-bold text-gradient">{{ user.get_full_name }}</h4>
+                    <p class="text-muted small mb-3">{{ user.bio|truncatechars:50|default:"No bio yet" }}</p>
+                    
+                    <div class="d-flex justify-content-center mb-4">
+                        <div class="text-center me-3 px-3 py-2 rounded bg-light-primary">
+                            <div class="h5 mb-0 fw-bold text-primary">{{ teaching_count }}</div>
+                            <small class="text-muted">Teaching</small>
+                        </div>
+                        <div class="text-center px-3 py-2 rounded bg-light-info">
+                            <div class="h5 mb-0 fw-bold text-info">{{ learning_count }}</div>
+                            <small class="text-muted">Learning</small>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-wrapper mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">Profile Completion</span>
+                            <span class="fw-bold">{{ profile_completion }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-gradient-primary progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: {{ profile_completion }}%" 
+                                 aria-valuenow="{{ profile_completion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="swapcoins-badge mb-4 p-3 rounded bg-light-warning">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">SwapCoins:</span>
+                            <span class="badge bg-warning text-dark fs-6">{{ user.swap_coins }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'profile' %}" class="btn btn-sm btn-gradient-primary">
+                            <i class="fas fa-user-edit me-1"></i> Edit Profile
+                        </a>
+                        <a href="{% url 'account_change_password' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-lock me-1"></i> Change Password
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Availability Card -->
+            <div class="card shadow-sm border-0 rounded-lg mt-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-calendar-alt me-2 text-primary"></i> Availability</h6>
+                </div>
+                <div class="card-body pt-0">
+                    {% for avail in user_availability %}
+                        <div class="availability-item d-flex justify-content-between align-items-center p-2 mb-2 rounded bg-light">
+                            <span class="fw-bold small">{{ avail.get_day_display }}</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary small">
+                                {{ avail.start_time|time:"H:i" }} - {{ avail.end_time|time:"H:i" }}
+                            </span>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-calendar-times text-muted mb-2"></i>
+                            <p class="small text-muted mb-0">No availability set</p>
+                        </div>
+                    {% endfor %}
+                    <a href="{% url 'availability' %}" class="btn btn-sm btn-gradient-primary w-100 mt-3">
+                        <i class="fas fa-edit me-1"></i> Update Availability
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0 fw-bold text-gradient">Dashboard</h2>
+                <div>
+                    <a href="{% url 'skills:add' %}" class="btn btn-gradient-primary">
+                        <i class="fas fa-plus me-1"></i> Add Skills
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-4">
+                    <div class="card stat-card border-0 shadow-sm bg-gradient-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase mb-1 text-white-50">Active Exchanges</h6>
+                                    <div class="h2 mb-0 fw-bold">{{ active_exchanges }}</div>
+                                </div>
+                                <i class="fas fa-exchange-alt fa-3x opacity-25"></i>
+                            </div>
+                            <div class="mt-3">
+                                <a href="#" class="text-white small">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card border-0 shadow-sm bg-gradient-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase mb-1 text-white-50">Circle Memberships</h6>
+                                    <div class="h2 mb-0 fw-bold">{{ circle_memberships }}</div>
+                                </div>
+                                <i class="fas fa-users fa-3x opacity-25"></i>
+                            </div>
+                            <div class="mt-3">
+                                <a href="#" class="text-white small">View Circles <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card border-0 shadow-sm bg-gradient-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase mb-1 text-white-50">Ongoing Projects</h6>
+                                    <div class="h2 mb-0 fw-bold">{{ ongoing_projects }}</div>
+                                </div>
+                                <i class="fas fa-project-diagram fa-3x opacity-25"></i>
+                            </div>
+                            <div class="mt-3">
+                                <a href="#" class="text-white small">View Projects <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Sessions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-calendar-day me-2 text-primary"></i> Upcoming Sessions</h6>
+                    <a href="{% url 'skills:schedule' %}" class="btn btn-sm btn-gradient-primary">
+                        <i class="fas fa-plus me-1"></i> Schedule New
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_sessions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Type</th>
+                                        <th>Partner</th>
+                                        <th>Skill</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in upcoming_sessions %}
+                                        <tr class="session-row">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="session-date me-3 text-center">
+                                                        <div class="month bg-light-primary text-primary rounded-top py-1 px-2 small">{{ session.scheduled_time|date:"M" }}</div>
+                                                        <div class="day bg-primary text-white rounded-bottom py-1 px-2 fw-bold">{{ session.scheduled_time|date:"d" }}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">{{ session.scheduled_time|date:"l" }}</div>
+                                                        <small class="text-muted">{{ session.scheduled_time|time:"H:i" }} ({{ session.duration }} mins)</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if session.mentor == user %}
+                                                    <span class="badge bg-success bg-opacity-10 text-success">Teaching</span>
+                                                {% else %}
+                                                    <span class="badge bg-info bg-opacity-10 text-info">Learning</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if session.mentor == user %}
+                                                        {% if session.learner.profile_picture %}
+                                                            <img src="{{ session.learner.profile_picture.url }}" alt="{{ session.learner.username }}" class="rounded-circle me-2" width="32">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-secondary text-white text-center me-2" style="width:32px;height:32px;line-height:32px;">
+                                                                {{ session.learner.username|first|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                        <a href="{% url 'profile_view' session.learner.username %}" class="text-dark">
+                                                            {{ session.learner.get_full_name }}
+                                                        </a>
+                                                    {% else %}
+                                                        {% if session.mentor.profile_picture %}
+                                                            <img src="{{ session.mentor.profile_picture.url }}" alt="{{ session.mentor.username }}" class="rounded-circle me-2" width="32">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-secondary text-white text-center me-2" style="width:32px;height:32px;line-height:32px;">
+                                                                {{ session.mentor.username|first|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                        <a href="{% url 'profile_view' session.mentor.username %}" class="text-dark">
+                                                            {{ session.mentor.get_full_name }}
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">{{ session.skill.name }}</span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ session.meeting_link }}" class="btn btn-sm btn-gradient-primary" target="_blank">
+                                                    <i class="fas fa-video me-1"></i> Join
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-5">
+                            <div class="empty-state-icon bg-light-primary text-primary">
+                                <i class="fas fa-calendar-times"></i>
+                            </div>
+                            <h5 class="mt-3">No Upcoming Sessions</h5>
+                            <p class="text-muted">Schedule a skill exchange session to get started</p>
+                            <a href="{% url 'skills:discover' %}" class="btn btn-gradient-primary mt-2">
+                                <i class="fas fa-search me-1"></i> Find Partners
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Skill Cards -->
+            <div class="row g-4">
+                <!-- Skills I Can Teach -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold"><i class="fas fa-chalkboard-teacher me-2 text-success"></i> I Can Teach</h6>
+                            <span class="badge bg-success bg-opacity-10 text-success">{{ teaching_skills.count }}</span>
+                        </div>
+                        <div class="card-body">
+                            {% if teaching_skills %}
+                                <div class="row g-3">
+                                    {% for skill in teaching_skills %}
+                                        <div class="col-12">
+                                            <div class="skill-card teach-card p-3 rounded border-start border-3 border-success">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold">{{ skill.skill.name }}</h6>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <small class="text-muted">Level</small>
+                                                                <div class="fw-bold">{{ skill.get_level_display }}</div>
+                                                            </div>
+                                                            <div>
+                                                                <small class="text-muted">Sessions</small>
+                                                                <div class="fw-bold">12</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="badge bg-success bg-opacity-10 text-success">Teaching</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mt-3">
+                                                    <a href="{% url 'skills:edit' skill.id %}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-edit me-1"></i> Edit
+                                                    </a>
+                                                    <a href="{% url 'skills:find_learners' skill.skill.id %}" class="btn btn-sm btn-gradient-success">
+                                                        <i class="fas fa-search me-1"></i> Find Learners
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="empty-state text-center py-5">
+                                    <div class="empty-state-icon bg-light-success text-success">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    </div>
+                                    <h5 class="mt-3">No Teaching Skills</h5>
+                                    <p class="text-muted">Add skills you can teach to help others learn</p>
+                                    <a href="{% url 'skills:add' %}" class="btn btn-gradient-success mt-2">
+                                        <i class="fas fa-plus me-1"></i> Add Skills
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skills I Want to Learn -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold"><i class="fas fa-graduation-cap me-2 text-info"></i> I Want to Learn</h6>
+                            <span class="badge bg-info bg-opacity-10 text-info">{{ learning_skills.count }}</span>
+                        </div>
+                        <div class="card-body">
+                            {% if learning_skills %}
+                                <div class="row g-3">
+                                    {% for skill in learning_skills %}
+                                        <div class="col-12">
+                                            <div class="skill-card learn-card p-3 rounded border-start border-3 border-info">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold">{{ skill.skill.name }}</h6>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <small class="text-muted">Level</small>
+                                                                <div class="fw-bold">{{ skill.get_level_display }}</div>
+                                                            </div>
+                                                            <div>
+                                                                <small class="text-muted">Sessions</small>
+                                                                <div class="fw-bold">8</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="badge bg-info bg-opacity-10 text-info">Learning</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mt-3">
+                                                    <a href="{% url 'skills:edit' skill.id %}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-edit me-1"></i> Edit
+                                                    </a>
+                                                    <a href="{% url 'skills:find_mentors' skill.skill.id %}" class="btn btn-sm btn-gradient-info">
+                                                        <i class="fas fa-search me-1"></i> Find Mentors
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="empty-state text-center py-5">
+                                    <div class="empty-state-icon bg-light-info text-info">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <h5 class="mt-3">No Learning Skills</h5>
+                                    <p class="text-muted">Add skills you want to learn to find mentors</p>
+                                    <a href="{% url 'skills:add' %}" class="btn btn-gradient-info mt-2">
+                                        <i class="fas fa-plus me-1"></i> Add Skills
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-bell me-2 text-warning"></i> Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_activity %}
+                        <div class="activity-feed">
+                            {% for activity in recent_activity %}
+                                <div class="activity-item position-relative ps-4 pb-3">
+                                    <div class="activity-badge">
+                                        <div class="badge-dot bg-warning"></div>
+                                    </div>
+                                    <div class="activity-content ps-3">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex align-items-center mb-1">
+                                                {% if activity.user.profile_picture %}
+                                                    <img src="{{ activity.user.profile_picture.url }}" alt="{{ activity.user.username }}" class="rounded-circle me-2" width="32">
+                                                {% else %}
+                                                    <div class="rounded-circle bg-secondary text-white text-center me-2" style="width:32px;height:32px;line-height:32px;">
+                                                        {{ activity.user.username|first|upper }}
+                                                    </div>
+                                                {% endif %}
+                                                <h6 class="mb-0 fw-bold">{{ activity.user.get_full_name }}</h6>
+                                            </div>
+                                            <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                                        </div>
+                                        <p class="mb-2">{{ activity.message }}</p>
+                                        {% if activity.link %}
+                                            <a href="{{ activity.link }}" class="btn btn-sm btn-outline-warning">View Details</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'activity' %}" class="btn btn-sm btn-gradient-warning">
+                                <i class="fas fa-history me-1"></i> View All Activity
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-5">
+                            <div class="empty-state-icon bg-light-warning text-warning">
+                                <i class="fas fa-bell-slash"></i>
+                            </div>
+                            <h5 class="mt-3">No Recent Activity</h5>
+                            <p class="text-muted">Your activity will appear here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #4e73df;
+        --success-color: #1cc88a;
+        --info-color: #36b9cc;
+        --warning-color: #f6c23e;
+        --danger-color: #e74a3b;
+    }
+    
+    /* Gradient Backgrounds */
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(135deg, var(--success-color) 0%, #0d8d6b 100%);
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(135deg, var(--info-color) 0%, #258ea6 100%);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #dda20a 100%);
+    }
+    
+    /* Light Backgrounds */
+    .bg-light-primary {
+        background-color: rgba(78, 115, 223, 0.1);
+    }
+    
+    .bg-light-success {
+        background-color: rgba(28, 200, 138, 0.1);
+    }
+    
+    .bg-light-info {
+        background-color: rgba(54, 185, 204, 0.1);
+    }
+    
+    .bg-light-warning {
+        background-color: rgba(246, 194, 62, 0.1);
+    }
+    
+    /* Text Gradients */
+    .text-gradient {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Buttons */
+    .btn-gradient {
+        background-image: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-gradient:hover {
+        background-image: linear-gradient(135deg, #3d5dd9 0%, #1a3ab5 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-gradient-primary {
+        background-image: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+    }
+    
+    .btn-gradient-success {
+        background-image: linear-gradient(135deg, var(--success-color) 0%, #0d8d6b 100%);
+    }
+    
+    .btn-gradient-info {
+        background-image: linear-gradient(135deg, var(--info-color) 0%, #258ea6 100%);
+    }
+    
+    .btn-gradient-warning {
+        background-image: linear-gradient(135deg, var(--warning-color) 0%, #dda20a 100%);
+    }
+    
+    /* Avatar Styles */
+    .avatar-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .avatar-default {
+        width: 120px;
+        height: 120px;
+        line-height: 120px;
+        font-size: 48px;
+        display: inline-block;
+    }
+    
+    /* Stat Cards */
+    .stat-card {
+        transition: all 0.3s;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Skill Cards */
+    .skill-card {
+        transition: all 0.3s;
+        background-color: white;
+    }
+    
+    .skill-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .teach-card {
+        border-left: 3px solid var(--success-color);
+    }
+    
+    .learn-card {
+        border-left: 3px solid var(--info-color);
+    }
+    
+    /* Session Date */
+    .session-date {
+        min-width: 45px;
+    }
+    
+    .session-row:hover {
+        background-color: rgba(78, 115, 223, 0.03);
+    }
+    
+    /* Activity Feed */
+    .activity-feed {
+        position: relative;
+    }
+    
+    .activity-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 19px;
+        top: 25px;
+        bottom: 0;
+        width: 2px;
+        background-color: #f0f0f0;
+    }
+    
+    .activity-badge {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    
+    .badge-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 2rem 0;
+    }
+    
+    .empty-state-icon {
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        border-radius: 50%;
+        font-size: 24px;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* SwapCoins Badge */
+    .swapcoins-badge {
+        border: 1px dashed rgba(246, 194, 62, 0.5);
+    }
+    
+    /* Progress Bar */
+    .progress-bar-striped {
+        background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, 
+                          transparent 25%, transparent 50%, 
+                          rgba(255, 255, 255, 0.15) 50%, 
+                          rgba(255, 255, 255, 0.15) 75%, 
+                          transparent 75%, transparent);
+        background-size: 1rem 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add animation to cards on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+<div class="col">
+    <div class="card h-100">
+        {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title">{{ course.title }}</h5>
+            <p class="card-text text-muted">{{ course.skill.name }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-{{ course.level == 'beginner'|yesno:'success,info,warning' }}">
+                    {{ course.get_level_display }}
+                </span>
+                <span class="text-muted">{{ course.enrollment_count }} students</span>
+            </div>
+        </div>
+        <div class="card-footer bg-white">
+            <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-sm btn-outline-primary w-100">
+                View Details
+            </a>
+        </div>
+    </div>
+</div>

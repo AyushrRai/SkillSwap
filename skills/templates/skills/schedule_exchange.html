@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        Schedule Exchange for {{ skill.name }}
+                        {% if is_mentor %}
+                            (You are teaching)
+                        {% else %}
+                            (You are learning)
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if is_mentor %}
+                            <input type="hidden" name="learner_id" value="{{ request.GET.learner_id }}">
+                        {% else %}
+                            <input type="hidden" name="mentor_id" value="{{ request.GET.mentor_id }}">
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Date</label>
+                                {{ form.exchange_date }}
+                                {% if form.exchange_date.errors %}
+                                    <div class="text-danger">{{ form.exchange_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Time</label>
+                                {{ form.exchange_time }}
+                                {% if form.exchange_time.errors %}
+                                    <div class="text-danger">{{ form.exchange_time.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Duration (minutes)</label>
+                            {{ form.duration }}
+                            {% if form.duration.errors %}
+                                <div class="text-danger">{{ form.duration.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Meeting Type</label>
+                            {{ form.meeting_type }}
+                            {% if form.meeting_type.errors %}
+                                <div class="text-danger">{{ form.meeting_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3" id="location-field">
+                            <label class="form-label">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Schedule Exchange</button>
+                            <a href="{% url 'skills:discover' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide location field based on meeting type
+    const meetingTypeRadios = document.querySelectorAll('input[name="meeting_type"]');
+    const locationField = document.getElementById('location-field');
+    
+    meetingTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            locationField.style.display = this.value === 'in_person' ? 'block' : 'none';
+        });
+        // Initialize on page load
+        if (radio.checked) {
+            locationField.style.display = radio.value === 'in_person' ? 'block' : 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

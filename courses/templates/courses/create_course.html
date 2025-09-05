@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Create Course - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Create New Course</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Course Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="skill" class="form-label">Skill Category</label>
+                                <select class="form-select" id="skill" name="skill" required>
+                                    {% for skill in teaching_skills %}
+                                    <option value="{{ skill.skill.id }}">{{ skill.skill.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="level" class="form-label">Level</label>
+                                <select class="form-select" id="level" name="level" required>
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_free" name="is_free">
+                                    <label class="form-check-label" for="is_free">Is Free</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="price" class="form-label">Price (SwapCoins)</label>
+                                <input type="number" class="form-control" id="price" name="price" min="0" value="0" step="1">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="thumbnail" class="form-label">Thumbnail Image</label>
+                            <input class="form-control" type="file" id="thumbnail" name="thumbnail" accept="image/*">
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'courses:course_list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Course</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

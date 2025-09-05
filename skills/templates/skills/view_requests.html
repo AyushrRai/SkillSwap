@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Skill Requests - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="mb-0 fw-bold text-gradient">
+            <i class="fas fa-inbox me-2"></i> Skill Requests
+        </h2>
+        <span class="badge bg-primary bg-opacity-10 text-primary fs-6">
+            {{ received_requests|length }} Request{{ received_requests|pluralize }}
+        </span>
+    </div>
+
+    {% if received_requests %}
+        <div class="row g-4">
+            {% for req in received_requests %}
+            <div class="col-12">
+                <div class="request-card card border-0 shadow-sm overflow-hidden">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <!-- User Info Column -->
+                            <div class="col-md-8 mb-3 mb-md-0">
+                                <div class="d-flex align-items-start">
+                                    <!-- Avatar -->
+                                    <div class="position-relative me-3">
+                                        {% if req.requester.profile_picture %}
+                                            <img src="{{ req.requester.profile_picture.url }}" 
+                                                 class="avatar-img rounded-circle shadow-sm" 
+                                                 width="72" 
+                                                 height="72" 
+                                                 alt="{{ req.requester.username }}">
+                                        {% else %}
+                                            <div class="avatar-default rounded-circle bg-gradient-primary text-white d-flex align-items-center justify-content-center shadow-sm" 
+                                                 style="width:72px;height:72px;font-size:28px;">
+                                                {{ req.requester.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <div class="status-indicator 
+                                            {% if req.status == 'pending' %}bg-warning
+                                            {% elif req.status == 'accepted' %}bg-success
+                                            {% else %}bg-secondary{% endif %}">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- User Details -->
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex flex-wrap align-items-center mb-2">
+                                            <h5 class="mb-0 me-2 fw-bold">{{ req.requester.get_full_name }}</h5>
+                                            <span class="badge status-badge 
+                                                {% if req.status == 'pending' %}bg-warning text-dark
+                                                {% elif req.status == 'accepted' %}bg-success
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ req.status|title }}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Skill Tags -->
+                                        <div class="d-flex flex-wrap gap-2 mb-3">
+                                            <span class="skill-tag bg-info bg-opacity-10 text-info">
+                                                <i class="fas fa-chalkboard-teacher me-1"></i> 
+                                                {{ req.skill.name }}
+                                            </span>
+                                            <span class="skill-tag bg-purple bg-opacity-10 text-purple">
+                                                <i class="fas fa-star me-1"></i> 
+                                                {{ req.skill.get_level_display }}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Request Message -->
+                                        {% if req.message %}
+                                        <div class="request-message bg-light p-3 rounded mb-2">
+                                            <i class="fas fa-quote-left text-muted me-2"></i>
+                                            <span class="fst-italic">{{ req.message }}</span>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Timestamp -->
+                                        <div class="text-muted small">
+                                            <i class="far fa-clock me-1"></i> 
+                                            Sent {{ req.created_at|timesince }} ago
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons Column -->
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column gap-3">
+                                    {% if req.status == 'pending' %}
+                                        <a href="{% url 'skills:accept_request' req.id %}" 
+                                           class="btn btn-success btn-gradient-hover">
+                                            <i class="fas fa-check me-2"></i> Accept Request
+                                        </a>
+                                        <a href="{% url 'skills:reject_request' req.id %}" 
+                                           class="btn btn-outline-danger">
+                                            <i class="fas fa-times me-2"></i> Decline
+                                        </a>
+                                    {% elif req.status == 'accepted' %}
+                                        <a href="{% url 'skills:communication_room' req.id %}" 
+                                           class="btn btn-primary btn-gradient-hover">
+                                            <i class="fas fa-video me-2"></i> Start Session
+                                        </a>
+                                        <a href="#" 
+                                           class="btn btn-outline-secondary">
+                                            <i class="fas fa-comments me-2"></i> Message
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Footer (Hidden by default, shows on hover) -->
+                    <div class="card-footer bg-light border-0 py-2 text-center request-footer">
+                        <small class="text-muted">
+                            {% if req.status == 'pending' %}
+                                <i class="fas fa-hourglass-half me-1"></i> Waiting for your response
+                            {% elif req.status == 'accepted' %}
+                                <i class="fas fa-check-circle me-1 text-success"></i> You accepted this request
+                            {% else %}
+                                <i class="fas fa-info-circle me-1"></i> Request details
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state text-center py-5">
+            <div class="empty-state-icon bg-light-primary text-primary">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3 class="mt-4">No Requests Found</h3>
+            <p class="text-muted mb-4">You don't have any skill requests at the moment.</p>
+            <a href="{% url 'skills:discover' %}" class="btn btn-gradient-primary">
+                <i class="fas fa-search me-1"></i> Discover Skills
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #4e73df;
+        --success-color: #1cc88a;
+        --info-color: #36b9cc;
+        --warning-color: #f6c23e;
+        --danger-color: #e74a3b;
+        --purple-color: #6f42c1;
+    }
+    
+    /* Text Gradient */
+    .text-gradient {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Avatar Styles */
+    .avatar-img {
+        object-fit: cover;
+        border: 3px solid white;
+    }
+    
+    .avatar-default {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+    }
+    
+    .status-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+    
+    /* Request Card */
+    .request-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .request-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .request-card:hover .request-footer {
+        max-height: 50px;
+        opacity: 1;
+    }
+    
+    .request-footer {
+        max-height: 0;
+        opacity: 0;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    /* Skill Tags */
+    .skill-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35em 0.7em;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 1px solid transparent;
+    }
+    
+    /* Request Message */
+    .request-message {
+        border-left: 3px solid var(--info-color);
+    }
+    
+    /* Status Badge */
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        border-radius: 50px;
+    }
+    
+    /* Buttons */
+    .btn-gradient-hover {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .btn-gradient-hover::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: -1;
+    }
+    
+    .btn-gradient-hover:hover::before {
+        opacity: 1;
+    }
+    
+    .btn-success {
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    /* Purple Color */
+    .bg-purple {
+        background-color: var(--purple-color);
+    }
+    
+    .text-purple {
+        color: var(--purple-color);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 3rem 0;
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        line-height: 80px;
+        border-radius: 50%;
+        font-size: 32px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation to cards when page loads
+        const cards = document.querySelectorAll('.request-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Tooltip initialization
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Request to Join {{ circle.name }} - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-lock me-2"></i> Private Circle
+                        </h4>
+                        <a href="{% url 'community:circle_list' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    {% if request_pending %}
+                        <div class="mb-4">
+                            <i class="fas fa-user-clock fa-4x text-info mb-3"></i>
+                            <h3>Request Pending</h3>
+                        </div>
+                        <p class="lead">
+                            Your request to join <strong>{{ circle.name }}</strong> is awaiting approval by the circle admins.
+                        </p>
+                        <p class="text-muted">
+                            You'll receive a notification when your request is approved.
+                        </p>
+                        <a href="{% url 'community:circle_list' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-users me-1"></i> Browse Other Circles
+                        </a>
+                    {% else %}
+                        <div class="mb-4">
+                            <i class="fas fa-lock fa-4x text-secondary mb-3"></i>
+                            <h3>Join {{ circle.name }}</h3>
+                        </div>
+                        <p class="lead">
+                            This is a private circle. You need to request membership to join.
+                        </p>
+                        
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_message" class="form-label">Message to Admins (Optional)</label>
+                                <textarea class="form-control" id="id_message" name="message" rows="3"
+                                          placeholder="Tell the admins why you want to join this circle..."></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-1"></i> Send Request
+                                </button>
+                                <a href="{% url 'community:circle_list' %}" class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

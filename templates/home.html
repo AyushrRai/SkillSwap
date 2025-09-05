@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}SkillSwap - Peer-to-Peer Skill Exchange{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-dark text-white text-center py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">Swap Skills, Grow Together</h1>
+                <p class="lead mb-5">Teach what you know, learn what you don't. Join our community of passionate learners and mentors.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'skills:discover' %}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-search me-2"></i> Discover Skills
+                        </a>
+                        <a href="{% url 'skills:discover_users' %}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-users me-2"></i> Discover Users
+                        </a>
+                    {% else %}
+                        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i> Join Now
+                        </a>
+                        <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fas fa-sign-in-alt me-2"></i> Login
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">How SkillSwap Works</h2>
+            <p class="text-muted">A simple platform for skill exchange</p>
+            <div class="divider mx-auto bg-primary"></div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Create Profile Card -->
+            <div class="col-md-4">
+                <a href="{% if user.is_authenticated %}{% url 'profile_edit' %}{% else %}{% url 'account_signup' %}{% endif %}" 
+                   class="text-decoration-none" 
+                   aria-label="Go to {% if user.is_authenticated %}Profile Edit{% else %}Sign Up{% endif %}">
+                    <div class="card h-100 border-0 bg-dark-light shadow">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-square bg-primary text-white mb-4 mx-auto">
+                                <i class="fas fa-user-tie fa-2x"></i>
+                            </div>
+                            <h4 class="card-title">Create Profile</h4>
+                            <p class="card-text text-muted">List your skills and learning goals with our easy profile builder.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Find Matches Card -->
+            <div class="col-md-4">
+                <a href="{% url 'skills:discover_users' %}" 
+                   class="text-decoration-none" 
+                   aria-label="Go to Discover Users">
+                    <div class="card h-100 border-0 bg-dark-light shadow">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-square bg-primary text-white mb-4 mx-auto">
+                                <i class="fas fa-exchange-alt fa-2x"></i>
+                            </div>
+                            <h4 class="card-title">Find Matches</h4>
+                            <p class="card-text text-muted">Connect with perfect partners for mutual skill exchange.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Collaborate Card -->
+            <div class="col-md-4">
+                <a href="{% url 'projects:list' %}" 
+                   class="text-decoration-none" 
+                   aria-label="Go to Projects">
+                    <div class="card h-100 border-0 bg-dark-light shadow">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-square bg-primary text-white mb-4 mx-auto">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                            <h4 class="card-title">Collaborate</h4>
+                            <p class="card-text text-muted">Schedule sessions and track your learning progress.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Skills Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">Popular Skills</h2>
+            <p class="text-muted">Discover what our community is learning</p>
+            <div class="divider mx-auto bg-primary"></div>
+        </div>
+        
+        <div class="row g-3 justify-content-center">
+            {% for skill in popular_skills %}
+            <div class="col-auto">
+                <a href="{% url 'skills:category' skill.id %}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="{{ skill.icon }} me-2"></i> {{ skill.name }}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="btn btn-link text-primary">
+                    <i class="fas fa-user me-2"></i> View My Skills
+                </a>
+            {% else %}
+                <a href="{% url 'account_signup' %}" class="btn btn-link text-primary">
+                    <i class="fas fa-arrow-right me-2"></i> Browse All Skills
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">Community Voices</h2>
+            <p class="text-muted">What our members say</p>
+            <div class="divider mx-auto bg-primary"></div>
+        </div>
+        
+        <div class="row g-4">
+            {% for testimonial in testimonials %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark-light shadow">
+                    <div class="card-body text-center p-4">
+                        <img src="{{ testimonial.user.profile_picture.url }}" alt="{{ testimonial.user.username }}" class="rounded-circle mb-3" width="80" height="80">
+                        <div class="rating-stars mb-3">
+                            {% for i in "12345" %}
+                                <i class="fas fa-star{% if forloop.counter > testimonial.rating %}-o{% endif %} text-warning"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="mb-4">"{{ testimonial.content }}"</p>
+                        <h5 class="mb-1">{{ testimonial.user.get_full_name }}</h5>
+                        <p class="text-muted small">{{ testimonial.user.userprofile.title }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA Section -->
+<section class="py-5 bg-darker text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Start Learning?</h2>
+        <p class="mb-5">Join thousands exchanging skills right now</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'skills:discover' %}" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-exchange-alt me-2"></i> Find Partners
+            </a>
+        {% else %}
+            <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-4 me-3">
+                <i class="fas fa-user-plus me-2"></i> Sign Up Free
+            </a>
+            <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg px-4">
+                <i class="fas fa-sign-in-alt me-2"></i> Login
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bs-dark: #212529;
+        --bs-dark-light: #2c3034;
+        --bs-darker: #1a1e21;
+    }
+    
+    body {
+        color: #f8f9fa;
+    }
+    
+    /* Background Colors */
+    .bg-dark {
+        background-color: var(--bs-dark) !important;
+    }
+    
+    .bg-dark-light {
+        background-color: var(--bs-dark-light) !important;
+    }
+    
+    .bg-darker {
+        background-color: var(--bs-darker) !important;
+    }
+    
+    /* Text Colors */
+    .text-muted {
+        color: #adb5bd !important;
+    }
+    
+    /* Divider */
+    .divider {
+        width: 80px;
+        height: 3px;
+        margin-top: 1rem;
+    }
+    
+    /* Icon Square */
+    .icon-square {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        border-radius: 0;
+    }
+    
+    /* Cards */
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 0;
+        cursor: pointer;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* Rating Stars */
+    .rating-stars {
+        color: #FFC107;
+        font-size: 1rem;
+    }
+    
+    /* Buttons */
+    .btn {
+        border-radius: 0;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
+    }
+    
+    .btn-outline-light:hover {
+        color: var(--bs-dark);
+    }
+    
+    .btn-link.text-primary:hover {
+        color: #0a58ca !important;
+        text-decoration: none;
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 600;
+    }
+    
+    .lead {
+        font-weight: 400;
+    }
+    
+    /* Images */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    /* Link Styling */
+    .text-decoration-none {
+        text-decoration: none !important;
+        color: inherit;
+    }
+    
+    /* Accessibility Focus */
+    a:focus {
+        outline: 2px solid #0d6efd;
+        outline-offset: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- No additional JavaScript needed for this clean version -->
+{% endblock %}

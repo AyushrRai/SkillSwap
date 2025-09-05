@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.get_full_name }} - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    {% if profile_user.profile_picture %}
+                        <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" 
+                             class="rounded-circle mb-3" width="150" height="150">
+                    {% else %}
+                        <div class="rounded-circle mb-3 d-inline-flex align-items-center justify-content-center bg-light" 
+                             style="width: 150px; height: 150px;">
+                            <span class="h1 text-muted">{{ profile_user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <h4>{{ profile_user.get_full_name }}</h4>
+                    <p class="text-muted">@{{ profile_user.username }}</p>
+                    
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="text-center me-4">
+                            <div class="h5 mb-0">{{ teaching_skills.count }}</div>
+                            <small class="text-muted">Teaching</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="h5 mb-0">{{ learning_skills.count }}</div>
+                            <small class="text-muted">Learning</small>
+                        </div>
+                    </div>
+                    
+                    {% if profile_user.bio %}
+                        <p class="text-center">{{ profile_user.bio }}</p>
+                    {% endif %}
+
+                    {% if request.user != profile_user and has_teaching_skills %}
+
+                        <div class="mt-3">
+                            <a href="{% url 'skills:send_request' profile_user.username %}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-handshake me-1"></i> Request to Learn
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i> Teaching Skills</h5>
+                </div>
+                <div class="card-body">
+                    {% if teaching_skills %}
+                        <div class="row g-2">
+                            {% for skill in teaching_skills %}
+                                <div class="col-md-6">
+                                    <div class="card skill-card">
+                                        <div class="card-body">
+                                            <h6>{{ skill.skill.name }}</h6>
+                                            <small class="text-muted">Level: {{ skill.get_level_display }}</small>
+                                            {% if request.user != profile_user and skill.can_teach %}
+                                                <div class="mt-2">
+                                                    <a href="{% url 'skills:send_request' profile_user.username %}?skill_id={{ skill.id }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-handshake me-1"></i> Request This Skill
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No teaching skills added yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i> Learning Skills</h5>
+                </div>
+                <div class="card-body">
+                    {% if learning_skills %}
+                        <div class="row g-2">
+                            {% for skill in learning_skills %}
+                                <div class="col-md-6">
+                                    <div class="card skill-card">
+                                        <div class="card-body">
+                                            <h6>{{ skill.skill.name }}</h6>
+                                            <small class="text-muted">Level: {{ skill.get_level_display }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No learning skills added yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

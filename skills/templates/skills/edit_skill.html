@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Skill - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <!-- Elegant Header -->
+            <div class="text-center mb-4">
+                <div class="position-relative d-inline-block mb-3">
+                    <img src="{% static 'images/skill-badge.png' %}" alt="Skill Badge" class="img-fluid" style="max-height: 100px;">
+                    <div class="position-absolute top-0 start-100 translate-middle">
+                        <span class="badge bg-pink rounded-pill px-3 py-2 shadow-sm">Edit</span>
+                    </div>
+                </div>
+                <h2 class="fw-semibold mb-2" style="color: #2b2d42;">Refine Your Superpower</h2>
+                <p class="text-muted mb-0" style="font-size: 0.95rem;">Update your skill details to better connect with the community</p>
+            </div>
+
+            <!-- Glassmorphism Form Card -->
+            <div class="card border-0 rounded-4 overflow-hidden mb-4" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);">
+                <div class="card-header bg-transparent py-3 border-bottom" style="border-color: rgba(0,0,0,0.05) !important;">
+                    <h5 class="mb-0 text-center" style="color: #4a4e69; font-weight: 500;">
+                        <i class="fas fa-magic me-2" style="color: #6c63ff;"></i> Edit {{ user_skill.skill.name }}
+                    </h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Skill Level Field -->
+                        <div class="mb-4">
+                            <label for="level" class="form-label small text-uppercase fw-bold text-muted mb-2">Proficiency Level</label>
+                            <select class="form-select" id="level" name="level" style="font-size: 0.925rem;" required>
+                                {% for value, label in skill_levels %}
+                                    <option value="{{ value }}" {% if value == user_skill.level %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="mt-2">
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-gradient-teal" role="progressbar" 
+                                         style="width: {% widthratio skill_levels|length|add:1 forloop.counter 100 %}%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted mt-1">
+                                    <span>Beginner</span>
+                                    <span>Expert</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Skill Type Fields -->
+                        <div class="mb-4">
+                            <label class="form-label small text-uppercase fw-bold text-muted mb-2">Skill Type</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="checkbox" class="btn-check" name="can_teach" 
+                                           id="can_teach" autocomplete="off" {% if user_skill.can_teach %}checked{% endif %}>
+                                    <label class="btn btn-light w-100 py-2 px-3 text-start rounded-3" for="can_teach" 
+                                           style="border: 1px solid rgba(0,0,0,0.05); font-size: 0.9rem;">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 bg-soft-teal text-teal rounded-circle p-2">
+                                                <i class="fas fa-chalkboard-teacher"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium" style="color: #2b2d42;">I Can Teach</div>
+                                                <div class="text-muted small">Share your expertise</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="checkbox" class="btn-check" name="wants_to_learn" 
+                                           id="wants_to_learn" autocomplete="off" {% if user_skill.wants_to_learn %}checked{% endif %}>
+                                    <label class="btn btn-light w-100 py-2 px-3 text-start rounded-3" for="wants_to_learn" 
+                                           style="border: 1px solid rgba(0,0,0,0.05); font-size: 0.9rem;">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 bg-soft-blue text-blue rounded-circle p-2">
+                                                <i class="fas fa-user-graduate"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium" style="color: #2b2d42;">I Want to Learn</div>
+                                                <div class="text-muted small">Find a mentor</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3 mt-4">
+                            <button type="submit" class="btn btn-gradient-primary py-2 rounded-3 fw-medium" 
+                                    style="font-size: 0.95rem;">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary py-2 rounded-3 fw-medium">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="card border-0 rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-soft-pink text-pink rounded-circle p-2 me-3">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h6 class="mb-0" style="color: #4a4e69; font-weight: 500;">Editing Tips</h6>
+                    </div>
+                    <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
+                        <li class="mb-2 d-flex">
+                            <span class="badge bg-soft-teal text-teal rounded-circle p-1 me-2" style="width: 24px; height: 24px; line-height: 1;">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            Be honest about your skill level to find better matches
+                        </li>
+                        <li class="mb-2 d-flex">
+                            <span class="badge bg-soft-blue text-blue rounded-circle p-1 me-2" style="width: 24px; height: 24px; line-height: 1;">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            Update both teaching and learning options as needed
+                        </li>
+                        <li class="d-flex">
+                            <span class="badge bg-soft-purple text-purple rounded-circle p-1 me-2" style="width: 24px; height: 24px; line-height: 1;">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            More accurate profiles get 3x more connections
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Colors */
+    .bg-pink { background-color: #ff6b9e; }
+    .text-pink { color: #ff6b9e; }
+    .bg-soft-pink { background-color: rgba(255, 107, 158, 0.1); }
+    
+    .bg-teal { background-color: #20c997; }
+    .text-teal { color: #20c997; }
+    .bg-soft-teal { background-color: rgba(32, 201, 151, 0.1); }
+    
+    .bg-blue { background-color: #3a86ff; }
+    .text-blue { color: #3a86ff; }
+    .bg-soft-blue { background-color: rgba(58, 134, 255, 0.1); }
+    
+    .bg-purple { background-color: #6c63ff; }
+    .text-purple { color: #6c63ff; }
+    .bg-soft-purple { background-color: rgba(108, 99, 255, 0.1); }
+    
+    /* Gradient Button */
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, #6c63ff 0%, #3a86ff 100%);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .btn-gradient-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+    }
+    
+    /* Gradient Progress Bar */
+    .bg-gradient-teal {
+        background: linear-gradient(90deg, #20c997 0%, #3a86ff 100%);
+    }
+    
+    /* Checked State for Checkboxes */
+    .btn-check:checked + .btn-light {
+        background-color: white;
+        border-color: #6c63ff !important;
+        box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.25);
+    }
+    
+    /* Form Focus States */
+    .form-control:focus, .form-select:focus {
+        border-color: #6c63ff;
+        box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.1);
+    }
+    
+    /* Badge Styles */
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<script>
+    // Dynamic Progress Bar
+    document.addEventListener('DOMContentLoaded', function() {
+        const levelSelect = document.getElementById('level');
+        const progressBar = document.querySelector('.progress-bar');
+        
+        // Set initial progress
+        updateProgressBar();
+        
+        // Update on change
+        levelSelect.addEventListener('change', updateProgressBar);
+        
+        function updateProgressBar() {
+            const levels = ['beginner', 'intermediate', 'advanced', 'expert', 'professional'];
+            const selectedLevel = levelSelect.value;
+            const levelIndex = levels.indexOf(selectedLevel);
+            const progress = ((levelIndex + 1) / levels.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+    });
+    
+    // Form Validation
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

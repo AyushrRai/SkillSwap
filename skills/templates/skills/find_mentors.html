@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Find Mentors for {{ skill.name }} - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Find Mentors for {{ skill.name }}</h2>
+            <p class="text-muted">Connect with experienced {{ skill.name }} mentors</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="{% url 'skills:discover' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Discover
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Available Mentors</h6>
+                <div>
+                    <span class="badge bg-primary">{{ mentors|length }} mentors found</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if mentors %}
+                <div class="row g-3">
+                    {% for mentor in mentors %}
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex mb-3">
+                                        <img src="{{ mentor.profile_picture.url }}" alt="{{ mentor.username }}" class="rounded-circle me-3" width="80" height="80">
+                                        <div>
+                                            <h5 class="mb-1">{{ mentor.get_full_name }}</h5>
+                                            <p class="text-muted small mb-1">@{{ mentor.username }}</p>
+                                            <div class="rating-stars mb-2">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= mentor.avg_rating %}
+                                                        <i class="fas fa-star"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="ms-1">({{ mentor.review_count }})</span>
+                                            </div>
+                                            <span class="badge bg-success">{{ mentor.skill_level }} in {{ skill.name }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Availability</h6>
+                                        <p>{{ mentor.availability_overlap }} match with your schedule</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Match Score</h6>
+                                        <div class="progress" style="height: 10px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ mentor.match_score }}%" aria-valuenow="{{ mentor.match_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <small class="text-muted">{{ mentor.match_score }}% match based on skills and availability</small>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{% url 'public_profile' mentor.username %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-user me-1"></i> View Profile
+                                        </a>
+                                        <a href="{% url 'skills:initiate_exchange' mentor.id skill.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-exchange-alt me-1"></i> Request Exchange
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+                    <h5>No Mentors Found</h5>
+                    <p class="text-muted">We couldn't find any mentors for {{ skill.name }} at your level</p>
+                    <a href="{% url 'skills:discover' %}" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Browse Other Skills
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-white">
+            <h6 class="mb-0">AI-Powered Suggestions</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-robot me-2"></i> SkillSwap AI Recommends</h5>
+                <p>Based on your interest in {{ skill.name }}, you might also want to learn these complementary skills:</p>
+                
+                <div class="row mt-3">
+                    {% for suggested_skill in ai_suggestions %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="icon-circle bg-info text-white me-2">
+                                            <i class="{{ suggested_skill.icon }}"></i>
+                                        </div>
+                                        <h6 class="mb-0">{{ suggested_skill.name }}</h6>
+                                    </div>
+                                    <p class="small text-muted">{{ suggested_skill.reason }}</p>
+                                    <a href="{% url 'skills:find_mentors' suggested_skill.id %}" class="btn btn-sm btn-outline-primary w-100">
+                                        Find Mentors
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}{{ circle.name }} - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Circle Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'community:circle_list' %}">Skill Circles</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ circle.name }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex align-items-center mb-3">
+                <h2 class="mb-0 me-3">{{ circle.name }}</h2>
+                {% if circle.privacy == 'private' %}
+                    <span class="badge bg-info">
+                        <i class="fas fa-lock me-1"></i> Private
+                    </span>
+                {% elif circle.privacy == 'hidden' %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-eye-slash me-1"></i> Hidden
+                    </span>
+                {% else %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-globe me-1"></i> Public
+                    </span>
+                {% endif %}
+            </div>
+            
+            <p class="text-muted">{{ circle.description }}</p>
+            
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-light text-dark">
+                    <i class="{{ circle.skill.icon }} me-1"></i> {{ circle.skill.name }}
+                </span>
+                {% for tag in circle.get_tags %}
+                    <span class="badge bg-light text-dark">#{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+            {% if is_member %}
+                <div class="btn-group" role="group">
+                    <a href="{% url 'community:leave_circle' circle.id %}" class="btn btn-outline-danger"
+                       onclick="return confirm('Are you sure you want to leave this circle?')">
+                        <i class="fas fa-sign-out-alt me-1"></i> Leave
+                    </a>
+                    {% if membership.is_favorite %}
+                        <button class="btn btn-warning favorite-btn" data-circle-id="{{ circle.id }}">
+                            <i class="fas fa-star"></i>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-warning favorite-btn" data-circle-id="{{ circle.id }}">
+                            <i class="far fa-star"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            {% else %}
+                {% if circle.privacy == 'public' %}
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" name="join_circle" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-1"></i> Join Circle
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+            
+            {% if is_admin %}
+                <div class="mt-2">
+                    <a href="{% url 'community:edit_circle' circle.id %}" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="fas fa-cog me-1"></i> Manage
+                    </a>
+                    <a href="{% url 'community:invite_member' circle.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-envelope me-1"></i> Invite
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Circle Rules (for admins) -->
+    {% if is_admin and circle.rules %}
+    <div class="alert alert-info mb-4">
+        <h5><i class="fas fa-info-circle me-2"></i>Circle Rules</h5>
+        <p class="mb-0">{{ circle.rules }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            <!-- Create Post (for members) -->
+            {% if is_member %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex mb-3">
+                            <img src="{{ request.user.profile_picture.url }}" 
+                                 alt="{{ request.user.username }}" 
+                                 class="rounded-circle me-3" width="50" height="50">
+                            {{ post_form.content }}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {{ post_form.post_type }}
+                            </div>
+                            <button type="submit" name="create_post" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i> Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Circle Posts -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i> Community Posts
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if posts %}
+                        <div class="list-group list-group-flush">
+                            {% for post in posts %}
+                                {% include 'community/_post_card.html' with post=post %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="#" class="btn btn-outline-primary">
+                                <i class="fas fa-ellipsis-h me-1"></i> Load More
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-4x text-muted mb-4"></i>
+                            <h4>No Posts Yet</h4>
+                            <p class="text-muted mb-3">Be the first to start a discussion in this circle</p>
+                            {% if is_member %}
+                                <button class="btn btn-primary" data-bs-toggle="collapse" href="#createPostForm">
+                                    <i class="fas fa-plus me-1"></i> Create Post
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Circle Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i> Circle Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Created By</h6>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ circle.created_by.profile_picture.url }}" 
+                                 alt="{{ circle.created_by.username }}" 
+                                 class="rounded-circle me-3" width="40" height="40">
+                            <div>
+                                <a href="{% url 'public_profile' circle.created_by.username %}" class="text-decoration-none">
+                                    {{ circle.created_by.get_full_name }}
+                                </a>
+                                <small class="d-block text-muted">
+                                    {{ circle.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Members</h6>
+                        <div class="avatar-group mb-3">
+                            {% for member in members %}
+                                <a href="{% url 'public_profile' member.user.username %}" 
+                                   class="avatar avatar-sm" 
+                                   data-bs-toggle="tooltip" 
+                                   title="{{ member.user.get_full_name }} ({{ member.get_role_display }})">
+                                    <img src="{{ member.user.profile_picture.url }}" 
+                                         class="rounded-circle" 
+                                         width="40" height="40" 
+                                         alt="{{ member.user.username }}">
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'community:circle_members' circle.id %}" 
+                           class="btn btn-sm btn-outline-secondary w-100">
+                            View All {{ circle.member_count }} Members
+                        </a>
+                    </div>
+                    
+                    {% if circle.rules %}
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Circle Rules</h6>
+                        <div class="bg-light p-3 rounded small">
+                            {{ circle.rules|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Upcoming Events -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i> Upcoming Events
+                    </h5>
+                    {% if is_member %}
+                        <a href="{% url 'community:create_event' circle.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i> New
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="list-group list-group-flush">
+                            {% for event in upcoming_events %}
+                                <a href="{% url 'community:event_detail' event.id %}" 
+                                   class="list-group-item list-group-item-action border-0 px-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ event.title }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i> 
+                                                {{ event.start_time|date:"M d" }} • {{ event.start_time|time:"g:i A" }}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-light text-dark">
+                                            {{ event.get_event_type_display }}
+                                        </span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="#" class="btn btn-sm btn-outline-secondary">
+                                View All Events
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <h5>No Upcoming Events</h5>
+                            <p class="text-muted">Check back later for scheduled events</p>
+                            {% if is_member %}
+                                <a href="{% url 'community:create_event' circle.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Create Event
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Circle Resources -->
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i> Resources
+                    </h5>
+                    {% if is_member %}
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#resourceModal">
+                            <i class="fas fa-plus me-1"></i> Add
+                        </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if resources %}
+                        <div class="list-group list-group-flush">
+                            {% for resource in resources %}
+                                <a href="{% if resource.resource_type == 'link' %}{{ resource.url }}{% else %}{{ resource.file.url }}{% endif %}" 
+                                   target="_blank"
+                                   class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if resource.resource_type == 'document' %}
+                                            <i class="fas fa-file-pdf text-danger me-3 fa-lg"></i>
+                                        {% elif resource.resource_type == 'link' %}
+                                            <i class="fas fa-link text-primary me-3 fa-lg"></i>
+                                        {% elif resource.resource_type == 'video' %}
+                                            <i class="fas fa-video text-danger me-3 fa-lg"></i>
+                                        {% else %}
+                                            <i class="fas fa-book text-info me-3 fa-lg"></i>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ resource.title }}</h6>
+                                            <small class="text-muted">
+                                                Uploaded by {{ resource.uploaded_by.get_full_name }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="#" class="btn btn-sm btn-outline-secondary">
+                                View All Resources
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                            <h5>No Resources Yet</h5>
+                            <p class="text-muted">Share helpful resources with the community</p>
+                            {% if is_member %}
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#resourceModal">
+                                    <i class="fas fa-plus me-1"></i> Add Resource
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resource Modal -->
+<div class="modal fade" id="resourceModal" tabindex="-1" aria-labelledby="resourceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resourceModalLabel">Add New Resource</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    {{ resource_form }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload Resource</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Favorite button functionality
+    $('.favorite-btn').click(function() {
+        const circleId = $(this).data('circle-id');
+        const btn = $(this);
+        
+        $.ajax({
+            url: `/community/circle/${circleId}/favorite/`,
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(data) {
+                if (data.success) {
+                    if (data.is_favorite) {
+                        btn.removeClass('btn-outline-warning').addClass('btn-warning');
+                        btn.html('<i class="fas fa-star"></i>');
+                    } else {
+                        btn.removeClass('btn-warning').addClass('btn-outline-warning');
+                        btn.html('<i class="far fa-star"></i>');
+                    }
+                }
+            }
+        });
+    });
+    
+    // Initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}
+{% endblock %}

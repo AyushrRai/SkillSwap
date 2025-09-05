@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Profile - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0 fw-bold text-gradient">Edit Profile</h3>
+                        <a href="{% url 'profile' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Profile
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-5">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row">
+                            <!-- Profile Picture Column -->
+                            <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                                <div class="profile-picture-container position-relative mx-auto mb-4">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ user.profile_picture.url }}" 
+                                             alt="{{ user.username }}" 
+                                             class="profile-picture rounded-circle shadow"
+                                             id="profile-picture-preview">
+                                    {% else %}
+                                        <div class="profile-picture-default rounded-circle bg-gradient-light text-dark d-flex align-items-center justify-content-center shadow"
+                                             id="profile-picture-preview">
+                                            <span class="display-4 fw-bold">{{ user.username|first|upper }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <label for="id_profile_picture" class="profile-picture-edit-btn">
+                                        <i class="fas fa-camera"></i>
+                                    </label>
+                                    <input type="file" 
+                                           name="profile_picture" 
+                                           id="id_profile_picture" 
+                                           class="d-none" 
+                                           accept="image/*">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="small text-muted mb-2 d-block">Recommended size: 300x300 pixels</label>
+                                    <div class="d-grid">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                id="remove-profile-picture">
+                                            <i class="fas fa-trash-alt me-1"></i> Remove Photo
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <hr class="d-lg-none my-4">
+                            </div>
+                            
+                            <!-- Form Fields Column -->
+                            <div class="col-lg-8">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_first_name" class="form-label">First Name</label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="id_first_name" 
+                                                   name="first_name" 
+                                                   value="{{ form.first_name.value|default:'' }}"
+                                                   placeholder="Enter your first name">
+                                            <div class="invalid-feedback">
+                                                Please provide a valid first name.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_last_name" class="form-label">Last Name</label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="id_last_name" 
+                                                   name="last_name" 
+                                                   value="{{ form.last_name.value|default:'' }}"
+                                                   placeholder="Enter your last name">
+                                            <div class="invalid-feedback">
+                                                Please provide a valid last name.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="id_email" class="form-label">Email Address</label>
+                                            <input type="email" 
+                                                   class="form-control" 
+                                                   id="id_email" 
+                                                   name="email" 
+                                                   value="{{ form.email.value|default:'' }}"
+                                                   placeholder="example@email.com">
+                                            <div class="invalid-feedback">
+                                                Please provide a valid email address.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="id_bio" class="form-label">About You</label>
+                                            <textarea class="form-control" 
+                                                      id="id_bio" 
+                                                      name="bio" 
+                                                      rows="4"
+                                                      placeholder="Tell others about yourself, your skills, and interests">{{ form.bio.value|default:'' }}</textarea>
+                                            <div class="form-text small">
+                                                Max 500 characters
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Additional Fields Section -->
+                                    <div class="col-12 mt-4">
+                                        <div class="accordion" id="additionalFields">
+                                            <div class="accordion-item border-0">
+                                                <h2 class="accordion-header" id="headingAdditional">
+                                                    <button class="accordion-button collapsed bg-light shadow-none" 
+                                                            type="button" 
+                                                            data-bs-toggle="collapse" 
+                                                            data-bs-target="#collapseAdditional" 
+                                                            aria-expanded="false" 
+                                                            aria-controls="collapseAdditional">
+                                                        <i class="fas fa-plus-circle me-2 text-primary"></i>
+                                                        Additional Information
+                                                    </button>
+                                                </h2>
+                                                <div id="collapseAdditional" 
+                                                     class="accordion-collapse collapse" 
+                                                     aria-labelledby="headingAdditional" 
+                                                     data-bs-parent="#additionalFields">
+                                                    <div class="accordion-body pt-4">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="id_location" class="form-label">Location</label>
+                                                                    <input type="text" 
+                                                                           class="form-control" 
+                                                                           id="id_location" 
+                                                                           name="location" 
+                                                                           value="{{ form.location.value|default:'' }}"
+                                                                           placeholder="Your city or country">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="id_website" class="form-label">Website</label>
+                                                                    <input type="url" 
+                                                                           class="form-control" 
+                                                                           id="id_website" 
+                                                                           name="website" 
+                                                                           value="{{ form.website.value|default:'' }}"
+                                                                           placeholder="https://yourwebsite.com">
+                                                                    <div class="form-text small">
+                                                                        Example: https://yourwebsite.com
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <div class="form-group">
+                                                                    <label for="id_social_links" class="form-label">Social Links</label>
+                                                                    <textarea class="form-control" 
+                                                                              id="id_social_links" 
+                                                                              name="social_links" 
+                                                                              rows="2"
+                                                                              placeholder="Enter your social media profile links separated by commas">{{ form.social_links.value|default:'' }}</textarea>
+                                                                    <div class="form-text small">
+                                                                        Separate multiple links with commas
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12 mt-4 pt-3 border-top">
+                                        <div class="d-flex justify-content-between">
+                                            <button type="reset" class="btn btn-outline-secondary">
+                                                <i class="fas fa-undo me-1"></i> Reset
+                                            </button>
+                                            <button type="submit" class="btn btn-gradient-primary px-4">
+                                                <i class="fas fa-save me-1"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Profile Picture Styles */
+    .profile-picture-container {
+        width: 180px;
+        height: 180px;
+        position: relative;
+    }
+    
+    .profile-picture {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border: 4px solid white;
+    }
+    
+    .profile-picture-default {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+        border: 4px solid white;
+    }
+    
+    .profile-picture-edit-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s;
+    }
+    
+    .profile-picture-edit-btn:hover {
+        background: #3a5bcc;
+        transform: scale(1.1);
+    }
+    
+    /* Form Styles */
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+    }
+    
+    /* Accordion Styles */
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(78, 115, 223, 0.05);
+        color: var(--primary-color);
+    }
+    
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,0.125);
+    }
+    
+    /* Text Gradient */
+    .text-gradient {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Button Gradient */
+    .btn-gradient-primary {
+        background-image: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-gradient-primary:hover {
+        background-image: linear-gradient(135deg, #3d5dd9 0%, #1a3ab5 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Form Validation */
+    .was-validated .form-control:invalid,
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .was-validated .form-control:invalid:focus,
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+    
+    /* Placeholder styling */
+    ::placeholder {
+        color: #6c757d !important;
+        opacity: 0.6 !important;
+    }
+    
+    /* For empty fields, show placeholder */
+    input:placeholder-shown, textarea:placeholder-shown {
+        background-color: #f8f9fa;
+    }
+    
+    /* For filled fields */
+    input:not(:placeholder-shown), textarea:not(:placeholder-shown) {
+        background-color: white;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Profile picture preview and upload handling
+    document.addEventListener('DOMContentLoaded', function() {
+        const profilePictureInput = document.getElementById('id_profile_picture');
+        const profilePicturePreview = document.getElementById('profile-picture-preview');
+        const removeProfilePictureBtn = document.getElementById('remove-profile-picture');
+        
+        // Handle profile picture change
+        profilePictureInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (profilePicturePreview.classList.contains('profile-picture-default')) {
+                        profilePicturePreview.classList.remove('profile-picture-default');
+                        profilePicturePreview.classList.add('profile-picture');
+                        profilePicturePreview.src = e.target.result;
+                    } else {
+                        profilePicturePreview.src = e.target.result;
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Handle remove profile picture
+        removeProfilePictureBtn.addEventListener('click', function() {
+            profilePictureInput.value = '';
+            if (profilePicturePreview.classList.contains('profile-picture')) {
+                profilePicturePreview.classList.remove('profile-picture');
+                profilePicturePreview.classList.add('profile-picture-default');
+                profilePicturePreview.innerHTML = '<span class="display-4 fw-bold">{{ user.username|first|upper }}</span>';
+            }
+        });
+        
+        // Edit button triggers file input
+        document.querySelector('.profile-picture-edit-btn').addEventListener('click', function() {
+            profilePictureInput.click();
+        });
+        
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+        
+        // Initialize all input placeholders
+        document.querySelectorAll('input, textarea').forEach(el => {
+            if (!el.value && el.placeholder) {
+                el.classList.add('placeholder-shown');
+            }
+            
+            el.addEventListener('input', function() {
+                if (this.value) {
+                    this.classList.remove('placeholder-shown');
+                } else {
+                    this.classList.add('placeholder-shown');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

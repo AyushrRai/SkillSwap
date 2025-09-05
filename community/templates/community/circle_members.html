@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Members - {{ circle.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'community:circle_list' %}">Circles</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'community:circle_detail' circle.id %}">{{ circle.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Members</li>
+                </ol>
+            </nav>
+            
+            <h2 class="mb-0">
+                <i class="fas fa-users me-2"></i> {{ circle.name }} Members
+            </h2>
+            <p class="text-muted">{{ members.count }} members</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'community:circle_detail' circle.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Circle
+            </a>
+            {% if is_admin %}
+                <a href="{% url 'community:invite_member' circle.id %}" class="btn btn-primary ms-2">
+                    <i class="fas fa-user-plus me-1"></i> Invite
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if is_admin and pending_requests_count > 0 %}
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            <i class="fas fa-user-clock me-2"></i>
+            You have {{ pending_requests_count }} pending membership request{{ pending_requests_count|pluralize }}.
+        </div>
+        <a href="{% url 'community:manage_requests' circle.id %}" class="btn btn-sm btn-info">
+            Review Requests
+        </a>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Members</h5>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" class="form-control" placeholder="Search members...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Last Active</th>
+                            {% if is_admin %}<th>Actions</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ member.user.profile_picture.url }}" 
+                                         alt="{{ member.user.username }}" 
+                                         class="rounded-circle me-3" width="40" height="40">
+                                    <div>
+                                        <a href="{% url 'public_profile' member.user.username %}" class="text-decoration-none">
+                                            {{ member.user.get_full_name }}
+                                        </a>
+                                        <small class="d-block text-muted">
+                                            @{{ member.user.username }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if member.role == 'admin' %}bg-danger
+                                    {% elif member.role == 'moderator' %}bg-warning text-dark
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ member.get_role_display }}
+                                </span>
+                            </td>
+                            <td>{{ member.joined_at|date:"M d, Y" }}</td>
+                            <td>{{ member.last_seen|timesince }} ago</td>
+                            {% if is_admin %}
+                            <td>
+                                {% if member.role == 'member' and user_role == 'admin' %}
+                                    <form method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ member.user.id }}">
+                                        <button type="submit" name="action" value="promote" class="btn btn-sm btn-outline-success">
+                                            Promote
+                                        </button>
+                                    </form>
+                                {% elif member.role == 'moderator' and user_role == 'admin' %}
+                                    <form method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ member.user.id }}">
+                                        <button type="submit" name="action" value="demote" class="btn btn-sm btn-outline-warning">
+                                            Demote
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                {% if member.role != 'admin' or user_role == 'admin' %}
+                                    <form method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ member.user.id }}">
+                                        <button type="submit" name="action" value="remove" 
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Are you sure you want to remove this member?')">
+                                            Remove
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                {% if member.status == 'banned' %}
+                                    <span class="badge bg-dark">Banned</span>
+                                {% elif member.role != 'admin' %}
+                                    <form method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ member.user.id }}">
+                                        <button type="submit" name="action" value="ban" 
+                                                class="btn btn-sm btn-outline-dark"
+                                                onclick="return confirm('Are you sure you want to ban this member?')">
+                                            Ban
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
